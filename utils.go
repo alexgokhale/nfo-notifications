@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -18,6 +19,13 @@ func stripEmpty(elems []string) []string {
 	}
 
 	return elemsToReturn
+}
+
+func getIPCountry(ip string) string {
+	res, _ := http.Get(fmt.Sprintf("http://ip-api.com/line/%s?fields=countryCode", ip))
+	body, _ := ioutil.ReadAll(res.Body)
+
+	return string(body)
 }
 
 func getEventById(ID string, events []*Event) *Event {
@@ -109,6 +117,9 @@ func sendNewEvents(events []Event) {
 							Value:  removeLastOctet(event.TargetAddress),
 							Inline: true,
 						},
+					},
+					Thumbnail: Thumbnail{
+						URL: fmt.Sprintf("https://www.countryflags.io/%s/flat/128.png", getIPCountry(event.TargetAddress)),
 					},
 				},
 			},
