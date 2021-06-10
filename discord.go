@@ -39,16 +39,16 @@ type Webhook struct {
 }
 
 type Embed struct {
-	Title       string    `json:"title,omitempty"`
-	Description string    `json:"description,omitempty"`
-	URL         string    `json:"url,omitempty"`
-	Color       int       `json:"color,omitempty"`
-	Timestamp   time.Time `json:"timestamp,omitempty"`
-	Footer      Footer    `json:"footer,omitempty"`
-	Thumbnail   Thumbnail `json:"thumbnail,omitempty"`
-	Image       Image     `json:"image,omitempty"`
-	Author      Author    `json:"author,omitempty"`
-	Fields      []Field   `json:"fields,omitempty"`
+	Title       string     `json:"title,omitempty"`
+	Description string     `json:"description,omitempty"`
+	URL         string     `json:"url,omitempty"`
+	Color       int        `json:"color,omitempty"`
+	Timestamp   *time.Time `json:"timestamp,omitempty"`
+	Footer      *Footer    `json:"footer,omitempty"`
+	Thumbnail   *Thumbnail `json:"thumbnail,omitempty"`
+	Image       *Image     `json:"image,omitempty"`
+	Author      *Author    `json:"author,omitempty"`
+	Fields      []*Field   `json:"fields,omitempty"`
 }
 
 type Footer struct {

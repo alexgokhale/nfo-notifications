@@ -25,7 +25,7 @@ func getIPCountry(ip string) string {
 	res, _ := http.Get(fmt.Sprintf("http://ip-api.com/line/%s?fields=countryCode", ip))
 	body, _ := ioutil.ReadAll(res.Body)
 
-	return string(body)
+	return strings.TrimSpace(string(body))
 }
 
 func getEventById(ID string, events []*Event) *Event {
@@ -96,8 +96,8 @@ func sendNewEvents(events []Event) {
 					Title:       "New Event",
 					Description: "A DDoS attack was filtered by NFO's firewall",
 					Color:       9772083,
-					Timestamp:   event.Time,
-					Fields: []Field{
+					Timestamp:   &event.Time,
+					Fields: []*Field{
 						{
 							Name:  "Attack Type",
 							Value: event.AttackType,
@@ -118,8 +118,8 @@ func sendNewEvents(events []Event) {
 							Inline: true,
 						},
 					},
-					Thumbnail: Thumbnail{
-						URL: fmt.Sprintf("https://www.countryflags.io/%s/flat/128.png", getIPCountry(event.TargetAddress)),
+					Thumbnail: &Thumbnail{
+						URL: fmt.Sprintf("https://www.countryflags.io/%s/flat/64.png", getIPCountry(event.TargetAddress)),
 					},
 				},
 			},
