@@ -90,7 +90,7 @@ func removeLastOctet(ip string) string {
 
 func sendNewEvents(events []Event) {
 	for _, event := range events {
-		err := sendDiscordWebhook(WebhookURL, Webhook{
+		res, err := sendDiscordWebhook(WebhookURL, Webhook{
 			Embeds: []Embed{
 				{
 					Title:       "New Event",
@@ -128,5 +128,9 @@ func sendNewEvents(events []Event) {
 		if err != nil {
 			fmt.Println(err)
 		}
+
+		body, _ := ioutil.ReadAll(res.Body)
+
+		fmt.Println(res.StatusCode, string(body))
 	}
 }

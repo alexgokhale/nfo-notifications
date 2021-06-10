@@ -7,28 +7,28 @@ import (
 	"time"
 )
 
-func sendDiscordWebhook(url string, webhook Webhook) error {
+func sendDiscordWebhook(url string, webhook Webhook) (*http.Response, error) {
 	requestContent, err := json.Marshal(webhook)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(requestContent))
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	request.Header.Set("Content-Type", "application/json")
 
-	_, err = http.DefaultClient.Do(request)
+	res, err := http.DefaultClient.Do(request)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return res, nil
 }
 
 type Webhook struct {
