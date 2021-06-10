@@ -12,11 +12,12 @@ import (
 )
 
 var (
-	Token      string
-	Email      string
-	Password   string
-	WebhookURL string
-	Hostname   string
+	Token           string
+	Email           string
+	Password        string
+	WebhookURL      string
+	Hostname        string
+	pacificLocation *time.Location
 )
 
 type Event struct {
@@ -53,6 +54,14 @@ func init() {
 	if Hostname == "" {
 		log.Fatalln("💔 Hostname argument missing")
 	}
+
+	loc, err := time.LoadLocation("America/Los_Angeles")
+
+	if err != nil {
+		log.Fatalln("💔 Couldn't load Pacific Time:", err)
+	}
+
+	pacificLocation = loc
 }
 
 func main() {
@@ -145,7 +154,7 @@ func main() {
 					}
 
 					t := strings.Replace(selection.Find(`span i`).Text(), "PT", "PST", 1)
-					parsedTime, _ := time.Parse("Jan 02 2006 03:04:05 PM MST", t)
+					parsedTime, _ := time.ParseInLocation("Jan 02 2006 03:04:05 PM MST", t, pacificLocation)
 					event.Time = parsedTime
 
 					events = append(events, &event)
