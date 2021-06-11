@@ -1,5 +1,7 @@
 # NFO Notifications
 
+[![pipeline status](https://gitlab.com/honour/nfo-notifications/badges/master/pipeline.svg)](https://gitlab.com/honour/nfo-notifications/-/commits/master)
+
 An application to scrape the event log page on the [NFO Control Panel](https://www.nfoservers.com/control/) and post new
 events to a Discord webhook
 
@@ -25,7 +27,7 @@ The application is configured using command-line flags:
 | `-e` | Your account email                        |
 | `-p` | Your account password                     |
 | `-t` | A valid authentication token              |
-| `-h` | The server identifier to fetch events for   |
+| `-h` | The server identifier to fetch events for |
 | `-w` | The Discord webhook URL to post events to |
 
 To successfully authenticate yourself, an existing authentication token or an email and password must be specified. If
