@@ -28,7 +28,7 @@ func getIPCountry(ip string) string {
 	return strings.TrimSpace(string(body))
 }
 
-func getEventById(ID string, events []*Event) *Event {
+func getEventByID(ID string, events []*Event) *Event {
 	for _, event := range events {
 		if event.ID == ID {
 			return event
@@ -64,7 +64,7 @@ func findNewEvents(old []*Event, new []*Event) []Event {
 
 	for k := range newMap {
 		if !oldMap[k] {
-			eventsToReturn = append(eventsToReturn, *getEventById(k, new))
+			eventsToReturn = append(eventsToReturn, *getEventByID(k, new))
 		}
 	}
 
@@ -75,22 +75,22 @@ func removeLastOctet(ip string) string {
 	ipParts := strings.Split(ip, ".")
 	ipParts[len(ipParts)-1] = "xxx"
 
-	newIp := ""
+	newIP := ""
 
 	for i, part := range ipParts {
-		newIp += part
+		newIP += part
 
 		if i != len(ipParts)-1 {
-			newIp += "."
+			newIP += "."
 		}
 	}
 
-	return newIp
+	return newIP
 }
 
 func sendNewEvents(events []Event) {
 	for _, event := range events {
-		res, err := sendDiscordWebhook(WebhookURL, Webhook{
+		res, err := sendDiscordWebhook(webhookURL, Webhook{
 			Embeds: []Embed{
 				{
 					Title:       "New Event",

@@ -12,14 +12,15 @@ import (
 )
 
 var (
-	Token           string
-	Email           string
-	Password        string
-	WebhookURL      string
-	Hostname        string
+	token           string
+	email           string
+	password        string
+	webhookURL      string
+	hostname        string
 	pacificLocation *time.Location
 )
 
+// Event represents a single item from the NFO event log
 type Event struct {
 	ID             string
 	Time           time.Time
@@ -36,22 +37,22 @@ func handleError(s string, err error) {
 }
 
 func init() {
-	flag.StringVar(&Token, "t", "", "An existing authentication token")
-	flag.StringVar(&Email, "e", "", "Your account email")
-	flag.StringVar(&Password, "p", "", "Your account password")
-	flag.StringVar(&WebhookURL, "w", "", "Discord webhook to send new events to")
-	flag.StringVar(&Hostname, "h", "", "The hostname to fetch events for")
+	flag.StringVar(&token, "t", "", "An existing authentication token")
+	flag.StringVar(&email, "e", "", "Your account email")
+	flag.StringVar(&password, "p", "", "Your account password")
+	flag.StringVar(&webhookURL, "w", "", "Discord webhook to send new events to")
+	flag.StringVar(&hostname, "h", "", "The hostname to fetch events for")
 	flag.Parse()
 
-	if Email == "" || Password == "" {
+	if (email == "" || password == "") && token == "" {
 		log.Fatalln("💔 Email or Password argument missing")
 	}
 
-	if WebhookURL == "" {
+	if webhookURL == "" {
 		log.Fatalln("💔 Webhook URL argument missing")
 	}
 
-	if Hostname == "" {
+	if hostname == "" {
 		log.Fatalln("💔 Hostname argument missing")
 	}
 
@@ -69,10 +70,10 @@ func main() {
 		CheckRedirect: nil,
 	}
 
-	if Token == "" {
+	if token == "" {
 		loginRes, err := httpClient.PostForm("https://www.nfoservers.com/control/status.pl", url.Values{
-			"email":       {Email},
-			"password":    {Password},
+			"email":       {email},
+			"password":    {password},
 			"permacookie": {"on"},
 			"login":       {"Log in to your control panel"},
 		})
@@ -83,26 +84,26 @@ func main() {
 			log.Fatalln("💔 Couldn't login to account, are your credentials correct?")
 		}
 
-		token, err := getTokenFromCookies(loginRes.Cookies())
+		cookieToken, err := getTokenFromCookies(loginRes.Cookies())
 
 		handleError("Couldn't get token", err)
 
-		Token = token
+		token = cookieToken
 	}
 
-	eventsUrl := fmt.Sprintf("https://www.nfoservers.com/control/events.pl?name=%s&typeofserver=virtual", Hostname)
-	eventsReq, _ := http.NewRequest("GET", eventsUrl, nil)
+	eventsURL := fmt.Sprintf("https://www.nfoservers.com/control/events.pl?name=%s&typeofserver=virtual", hostname)
+	eventsReq, _ := http.NewRequest("GET", eventsURL, nil)
 	eventsReq.AddCookie(&http.Cookie{
 		Name:  "cookietoken",
-		Value: Token,
+		Value: token,
 	})
 	eventsReq.AddCookie(&http.Cookie{
 		Name:  "email",
-		Value: Email,
+		Value: email,
 	})
 	eventsReq.AddCookie(&http.Cookie{
 		Name:  "password",
-		Value: Password,
+		Value: password,
 	})
 
 	var oldEvents []*Event
@@ -169,7 +170,7 @@ func main() {
 
 					id = strings.TrimPrefix(id, "event_standard_")
 
-					event := getEventById(id, events)
+					event := getEventByID(id, events)
 
 					if event == nil {
 						return
@@ -177,13 +178,13 @@ func main() {
 
 					infoElement.Children().RemoveFiltered(`a`)
 					infoElement.Children().RemoveFiltered(`div`)
-					infoHtml, err := infoElement.Html()
+					infoHTML, err := infoElement.Html()
 
 					if err != nil {
 						return
 					}
 
-					infoParts := strings.Split(infoHtml, "<br/>")
+					infoParts := strings.Split(infoHTML, "<br/>")
 					infoParts = stripEmpty(infoParts)
 
 					if len(infoParts) != 4 {
