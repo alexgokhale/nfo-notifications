@@ -1,0 +1,64 @@
+stages:
+  - lint
+  - build
+  - prepare
+  - upload
+  - release
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+lint:
+  image: golang:1.16
+  stage: lint
+  script:
+    - go get -u golang.org/x/lint/golint
+    - golint -set_exit_status $(go list ./... | grep -v /vendor/)
+
+build:
+  image: golang:1.16
+  stage: build
+  script:
+    - go get -v -d ./...
+    - go build -i -v NFONotifications
+  artifacts:
+    paths:
+      - NFONotifications
+
+prepare:
+  image: alpine:latest
+  stage: prepare
+  script:
+    - echo "TAG=$(cat VERSION)" >> variables.env
+    - echo "PACKAGE_REGISTRY_URL=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/nfo-notifications/$(cat VERSION)/NFONotifications" >> variables.env
+  artifacts:
+    reports:
+      dotenv: variables.env
+
+upload:
+  stage: upload
+  image: curlimages/curl:latest
+  needs:
+    - job: build
+      artifacts: true
+    - job: prepare
+      artifacts: true
+  script:
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file NFONotifications ${PACKAGE_REGISTRY_URL}
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: upload
+    - job: prepare
+      artifacts: true
+  script:
+    - echo 'Pushing release for $TAG'
+    - |
+      release-cli create --name "Release v$TAG" --tag-name "v$TAG" \
+      --assets-link "{\"name\":\"NFONotifications\",\"url\":\"${PACKAGE_REGISTRY_URL}\"}" \
